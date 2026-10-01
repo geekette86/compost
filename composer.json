@@ -1,0 +1,22 @@
+{
+    "name": "geekette86/compost",
+    "description": "Composer plugin that routes package downloads through a Compost caching proxy",
+    "type": "composer-plugin",
+    "license": "MIT",
+    "keywords": ["composer", "plugin", "proxy", "cache", "mirror", "packagist"],
+    "require": {
+        "php": ">=7.4",
+        "composer-plugin-api": "^2.0"
+    },
+    "require-dev": {
+        "composer/composer": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Compost\\": "plugin/src/"
+        }
+    },
+    "extra": {
+        "class": "Compost\\Plugin"
+    }
+}

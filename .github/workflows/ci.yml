@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test -race ./...
+
+  plugin:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ["7.4", "8.1", "8.3"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+      - name: Lint
+        run: for f in plugin/src/*.php; do php -l "$f" || exit 1; done
+      - name: Tests
+        run: php tests/php/run.php
+      - name: Validate composer.json
+        run: composer validate --strict --no-check-lock

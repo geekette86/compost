@@ -1,0 +1,14 @@
+services:
+  compost:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Optional, but without it GitHub's anonymous rate limit (60 req/h) bites fast.
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+    volumes:
+      - heap:/heap
+    restart: unless-stopped
+
+volumes:
+  heap:

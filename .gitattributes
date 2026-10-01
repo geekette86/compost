@@ -1,0 +1,10 @@
+# Keep the Composer plugin's dist archive small: only the PHP plugin ships.
+/cmd export-ignore
+/internal export-ignore
+/tests export-ignore
+/.github export-ignore
+/go.mod export-ignore
+/Dockerfile export-ignore
+/docker-compose.yml export-ignore
+/Makefile export-ignore
+/compost.example.json export-ignore
