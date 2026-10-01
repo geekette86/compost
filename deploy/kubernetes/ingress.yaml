@@ -1,0 +1,29 @@
+# Optional: expose Compost outside the cluster with HTTPS.
+# Change the host, and the ingress class / cert-manager issuer to yours.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: compost
+  labels:
+    app.kubernetes.io/name: compost
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    # Package zips can be large; don't let the ingress cut them off.
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [compost.example.com]
+      secretName: compost-tls
+  rules:
+    - host: compost.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: compost
+                port:
+                  name: http

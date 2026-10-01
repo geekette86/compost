@@ -1,0 +1,14 @@
+# Inside the cluster Compost is reachable at http://compost.compost.svc.cluster.local
+apiVersion: v1
+kind: Service
+metadata:
+  name: compost
+  labels:
+    app.kubernetes.io/name: compost
+spec:
+  selector:
+    app.kubernetes.io/name: compost
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

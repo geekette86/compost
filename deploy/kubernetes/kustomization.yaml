@@ -1,0 +1,15 @@
+# Deploy everything with:  kubectl apply -k deploy/kubernetes
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: compost
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - pvc.yaml
+  - deployment.yaml
+  - service.yaml
+  # Uncomment to expose Compost outside the cluster (edit the host first).
+  # - ingress.yaml
+images:
+  - name: ghcr.io/geekette86/compost
+    newTag: v0.1.0

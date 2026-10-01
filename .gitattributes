@@ -8,3 +8,5 @@
 /docker-compose.yml export-ignore
 /Makefile export-ignore
 /compost.example.json export-ignore
+/deploy export-ignore
+/docs export-ignore

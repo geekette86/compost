@@ -1,0 +1,14 @@
+# The heap: where cached packages are stored. Size it for your projects;
+# a few hundred projects typically fit in 10-20Gi.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: compost-heap
+  labels:
+    app.kubernetes.io/name: compost
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 20Gi
+  # storageClassName: standard-rwo

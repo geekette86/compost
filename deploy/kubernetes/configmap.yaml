@@ -1,0 +1,40 @@
+# The proxy configuration. Edit it, re-apply, then restart the pod:
+#   kubectl -n compost rollout restart deployment/compost
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: compost-config
+  labels:
+    app.kubernetes.io/name: compost
+data:
+  compost.json: |
+    {
+      "listen": ":8080",
+      "cache_dir": "/heap",
+      "upstream_timeout": "5m",
+      "max_object_size": 1073741824,
+      "mirrors": [
+        { "name": "packagist", "upstream": "https://repo.packagist.org/", "ttl": "1m" },
+        {
+          "name": "github-api",
+          "upstream": "https://api.github.com/repos/",
+          "allowed_paths": ["^[^/]+/[^/]+/(zipball|tarball)/[^/]+$"],
+          "headers": { "Authorization": "Bearer ${GITHUB_TOKEN}" }
+        },
+        {
+          "name": "github-codeload",
+          "upstream": "https://codeload.github.com/",
+          "allowed_paths": ["^[^/]+/[^/]+/(legacy\\.zip|legacy\\.tar\\.gz|zip|tar\\.gz)/.+$"]
+        },
+        {
+          "name": "gitlab",
+          "upstream": "https://gitlab.com/api/v4/projects/",
+          "allowed_paths": ["^[^/]+/repository/archive\\.(zip|tar\\.gz)$"]
+        },
+        {
+          "name": "bitbucket",
+          "upstream": "https://bitbucket.org/",
+          "allowed_paths": ["^[^/]+/[^/]+/get/[^/]+\\.(zip|tar\\.gz)$"]
+        }
+      ]
+    }

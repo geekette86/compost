@@ -64,6 +64,9 @@ API mirror only allows `owner/repo/zipball|tarball/ref`, so your
 # Docker
 GITHUB_TOKEN=ghp_xxx docker compose up -d
 
+# or Kubernetes (step-by-step guide: docs/kubernetes.md)
+kubectl apply -k deploy/kubernetes
+
 # or from source
 go install github.com/geekette86/compost/cmd/compost@latest
 GITHUB_TOKEN=ghp_xxx COMPOST_CACHE_DIR=/var/cache/compost compost
@@ -78,9 +81,8 @@ public packages.
 ### 2. Install the plugin
 
 ```bash
-composer global config repositories.compost vcs https://github.com/geekette86/compost
 composer global config allow-plugins.geekette86/compost true
-composer global require geekette86/compost:dev-main
+composer global require geekette86/compost
 
 composer compost enable https://compost.example.com
 composer compost status
@@ -97,6 +99,22 @@ export COMPOST_URL=https://compost.internal:8080
 `COMPOST_DISABLE=1` switches the plugin off for a single run. Use HTTPS in
 front of the proxy. For plain `http://` Composer also needs
 `composer config -g secure-http false`.
+
+## Running on Kubernetes
+
+Ready-made manifests live in [`deploy/kubernetes/`](deploy/kubernetes): a
+Deployment, a Service, a ConfigMap with the config, a volume for the heap and
+an optional HTTPS Ingress.
+
+```bash
+kubectl -n compost create secret generic compost-github --from-literal=token=ghp_xxx  # optional
+kubectl apply -k deploy/kubernetes
+```
+
+CI jobs in the same cluster then use
+`COMPOST_URL=http://compost.compost.svc.cluster.local`. The full walkthrough,
+covering setup, checks, Ingress, upgrades and troubleshooting, is in
+**[docs/kubernetes.md](docs/kubernetes.md)**.
 
 ## Configuration
 
@@ -145,6 +163,28 @@ make build  # bin/compost
 
 The Go proxy uses only the standard library. The PHP plugin supports PHP 7.4+
 and Composer 2.
+
+## Releasing
+
+One tag publishes both parts:
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+* **Proxy image:** the [Release workflow](.github/workflows/release.yml) builds
+  `ghcr.io/geekette86/compost:v0.1.0` (amd64 + arm64) and `:latest`.
+* **Composer plugin:** [Packagist](https://packagist.org/packages/geekette86/compost)
+  reads versions from the repository's tags.
+
+Setting up Packagist (once):
+
+1. The GitHub repository must be **public**.
+2. Sign in at https://packagist.org with your GitHub account.
+3. Click **Submit**, paste `https://github.com/geekette86/compost`, then
+   click **Check** and **Submit**.
+4. Packagist updates itself when you push a new tag. If it doesn't, connect
+   GitHub on your Packagist profile page.
 
 ## Roadmap
 

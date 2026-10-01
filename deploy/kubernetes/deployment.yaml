@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: compost
+  labels:
+    app.kubernetes.io/name: compost
+spec:
+  # One replica: the heap is a ReadWriteOnce volume. Recreate makes sure the
+  # old pod releases the volume before the new one starts.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: compost
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: compost
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532 # lets the non-root user write to the volume
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: compost
+          image: ghcr.io/geekette86/compost
+          args: ["-config", "/etc/compost/compost.json"]
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: compost-github
+                  key: token
+                  optional: true # Compost still works without it, but is rate limited
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: heap
+              mountPath: /heap
+            - name: config
+              mountPath: /etc/compost
+              readOnly: true
+      volumes:
+        - name: heap
+          persistentVolumeClaim:
+            claimName: compost-heap
+        - name: config
+          configMap:
+            name: compost-config
